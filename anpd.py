@@ -24,8 +24,8 @@ with open("models/anpd.names", 'r') as f:
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 print("[INFO] loading YOLO from disk...")
-net = cv2.dnn.readNetFromDarknet("models/anpd.v1.cfg",
-                                 "models/anpd.v1.weights")
+net = cv2.dnn.readNetFromDarknet("anpd/anpd.cfg",
+                                 "anpd/anpd_best.weights")
 model = cv2.dnn_DetectionModel(net)
 model.setInputParams(scale=1/255, size=(416, 416), swapRB=True)
 
