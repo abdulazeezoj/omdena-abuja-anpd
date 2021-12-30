@@ -1,3 +1,9 @@
 # anpd Folder ---------------------
-anpd/
+anpd/obj/
+anpd/out/*.weights
+anpd/inf/
+anpd/anpd.data
+anpd/yolov4-tiny.conv.29
 anpd.zip
+
+!anpd/out/anpd_best.weights
