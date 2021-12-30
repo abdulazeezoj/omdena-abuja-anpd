@@ -40,10 +40,6 @@ def detectImage(src):
     with open("anpd/anpd.names", 'r') as f:
         classNames = f.read().splitlines()
 
-    # load ANPD
-    model = anpd.load_anpd("anpd/anpd.cfg",
-                           "anpd/out/anpd_best.weights")
-
     # detect number plate and show timing information
     detection = anpd.detect(
         model, image, args["confidence"], args["threshold"])
