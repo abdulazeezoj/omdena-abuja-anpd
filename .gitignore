@@ -1,9 +1,26 @@
+<<<<<<< HEAD
+# anpd folder ------------------------------------------------------------------
+=======
 # anpd Folder ---------------------
 anpd/obj/
+>>>>>>> parent of 1279197 (Update .gitignore)
 anpd/out/*.weights
 anpd/inf/
 anpd/anpd.data
+<<<<<<< HEAD
+
+!anpd/out/anpd_best.weights
+
+# image dataset ----------------------------------------------------------------
+dataset/
+
+# release files ----------------------------------------------------------------
+release/
+
+__pycache__/
+=======
 anpd/yolov4-tiny.conv.29
 anpd.zip
 
 !anpd/out/anpd_best.weights
+>>>>>>> parent of 1279197 (Update .gitignore)
