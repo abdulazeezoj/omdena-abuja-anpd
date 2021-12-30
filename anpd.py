@@ -2,6 +2,7 @@
 import argparse
 import time
 import cv2
+from src import anpd
 
 
 # construct the argument parse and parse the arguments
@@ -15,44 +16,25 @@ ap.add_argument("-t", "--threshold", type=float, default=0.3,
 args = vars(ap.parse_args())
 
 
-# load our input image and grab its spatial dimensions
+# load our input image
 image = cv2.imread(args["image"])
 
-# load the objects class names our YOLO model was trained on
-with open("models/anpd.names", 'r') as f:
+# load class names
+with open("anpd/anpd.names", 'r') as f:
     classNames = f.read().splitlines()
 
-# load our YOLO object detector trained on COCO dataset (80 classes)
-print("[INFO] loading YOLO from disk...")
-net = cv2.dnn.readNetFromDarknet("anpd/anpd.cfg",
-                                 "anpd/anpd_best.weights")
-model = cv2.dnn_DetectionModel(net)
-model.setInputParams(scale=1/255, size=(416, 416), swapRB=True)
+# load ANPD
+model = anpd.load_anpd("anpd/anpd.cfg",
+                       "anpd/out/anpd_best.weights")
 
 
-# start detecting object and show timing information on YOLO
-start = time.time()
+# detect number plate and show timing information
+detection = anpd.detect(model, image, args["confidence"], args["threshold"])
 
-print("[INFO] detecting object(s)...")
-classIds, scores, boxes = model.detect(
-    image, confThreshold=args["confidence"], nmsThreshold=args["threshold"])
-
-end = time.time()
-print("[INFO] YOLO took {:.6f} seconds".format(end - start))
-
-
-# initialize detected bounding boxes, confidences, and
-# class IDs, respectively
-for (classId, score, box) in zip(classIds, scores, boxes):
-    cv2.rectangle(image, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]),
-                  color=(0, 255, 0), thickness=2)
-
-    text = '%s: %.2f' % (classNames[classId], score)
-    cv2.putText(image, text, (box[0], box[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                color=(0, 255, 0), thickness=2)
-
+# render detection on the image
+result = anpd.draw_bbox(image, classNames, detection)
 
 # display result
-cv2.imshow('Image', image)
+cv2.imshow('Result', result)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
