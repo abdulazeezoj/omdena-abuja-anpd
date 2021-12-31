@@ -1,6 +1,6 @@
 import argparse
 
-from anpd.anpd import ANPD
+from src.anpd import ANPD
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", required=True,
@@ -15,8 +15,7 @@ args = vars(ap.parse_args())
 
 
 # load ANPD
-model = ANPD("anpd/anpd.cfg", "anpd/out/anpd_best.weights",
-             "anpd/anpd.names", args["confidence"], args["threshold"])
+model = ANPD("anpd/", args["confidence"], args["threshold"])
 
 src_type = args["type"]
 src = args["source"]
