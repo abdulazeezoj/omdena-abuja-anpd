@@ -4,6 +4,8 @@
 import time as time
 
 import cv2 as cv2
+import easyocr
+import imutils
 from imutils.video import FileVideoStream, VideoStream
 
 
@@ -17,19 +19,22 @@ class ANPD():
         self.nmsThreshold = nmsThreshold
 
         print("[INFO] loading ANPD...")
-        self.__model = cv2.dnn_DetectionModel(cv2.dnn.readNetFromDarknet(
-                                              self.__configPath,
-                                              self.__weightsPath))
-        self.__model.setInputParams(scale=1/255, size=(416, 416), swapRB=True)
+        self.__detector = cv2.dnn_DetectionModel(cv2.dnn.readNetFromDarknet(
+            self.__configPath,
+            self.__weightsPath))
+        self.__detector.setInputParams(
+            scale=1/255, size=(416, 416), swapRB=True)
 
         with open(self.__namesPath, 'r') as f:
             self.__classNames = f.read().splitlines()
+
+        self.__reader = easyocr.Reader(['en'])
 
     def __detect(self, frame):
         start = time.time()
 
         print("[INFO] detecting plate(s)...")
-        classIds, scores, boxes = self.__model.detect(
+        classIds, scores, boxes = self.__detector.detect(
             frame, self.confThreshold, self.nmsThreshold)
 
         end = time.time()
@@ -37,16 +42,33 @@ class ANPD():
 
         return classIds, scores, boxes
 
-    def __draw_bbox(self, frame, detection):
-
+    def __read(self, frame, detection):
         classIds, scores, boxes = detection
+        numbers = []
 
-        for (classId, score, box) in zip(classIds, scores, boxes):
+        start = time.time()
+
+        for box in boxes:
+            x, y, w, h = box
+
+            number = self.__reader.readtext(frame[y:y+h, x:x+w], detail=0)
+            numbers.append(number[0].upper())
+
+        end = time.time()
+        print("[INFO] ANPR took {:.6f} seconds".format(end - start))
+
+        return classIds, scores, boxes, numbers
+
+    def __render(self, frame, detection):
+
+        classIds, scores, boxes, numbers = detection
+
+        for (classId, score, box, number) in zip(classIds, scores, boxes, numbers):
             x, y, w, h = box
             bb_color = (0, 255, 255)
             text_color = (0, 0, 0)
 
-            text = '%s: %.2f' % (self.__classNames[classId], score)
+            text = '{} | {}[{:.0%}]'.format(number, self.__classNames[classId], score)
             text_bb, _ = cv2.getTextSize(
                 text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
 
@@ -73,9 +95,10 @@ class ANPD():
 
         # detect number plate and show timing information
         detection = self.__detect(image)
+        detection = self.__read(image, detection)
 
         # render detection on the image
-        result = self.__draw_bbox(image, detection)
+        result = self.__render(image, detection)
 
         # show the output image
         cv2.imshow("Output", result)
@@ -99,9 +122,10 @@ class ANPD():
             if frame is not None:
                 # detect number plate and show timing information
                 detection = self.__detect(frame)
+                detection = self.__read(frame, detection)
 
                 # render detection on the frame
-                result = self.__draw_bbox(frame, detection)
+                result = self.__render(frame, detection)
 
                 # display result
                 cv2.imshow('Result', result)
