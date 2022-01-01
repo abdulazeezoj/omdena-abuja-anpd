@@ -1,0 +1,5 @@
+classes = 1
+train = /content/anpd/detector/train.txt
+valid = /content/anpd/detector/test.txt
+names = /content/anpd/detector/anpd.names
+backup = /content/anpd/detector/
