@@ -1,5 +1,0 @@
-classes = 1
-train = /content/anpd/train.txt
-valid = /content/anpd/test.txt
-names = /content/anpd/anpd.names
-backup = /content/anpd/out/
